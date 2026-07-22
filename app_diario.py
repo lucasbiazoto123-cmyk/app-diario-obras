@@ -9,7 +9,6 @@ st.set_page_config(page_title="Diário de Obras ITON", page_icon="🏗️", layo
 # ==========================================
 # 1. SISTEMA DE LOGIN COM NÍVEIS DE ACESSO
 # ==========================================
-# Aqui você cadastra quem pode entrar. 'papel' define o que a pessoa pode ver.
 USUARIOS = {
     "lucas": {"senha": "123", "nome": "Lucas (Admin)", "papel": "admin"},
     "lider1": {"senha": "123", "nome": "Líder Toyota", "papel": "lider"},
@@ -86,12 +85,13 @@ LISTA_COLABORADORES = ["Jorge", "Carlos Silva", "João Pedro", "Marcos Antônio"
 LISTA_COLABORADORES.sort()
 
 # ==========================================
-# 4. CRIAÇÃO DAS ABAS (Admin vê duas, Líder vê uma)
+# 4. CRIAÇÃO DAS ABAS (Corrigido)
 # ==========================================
 if st.session_state["papel_usuario"] == "admin":
     aba_lancamento, aba_relatorios = st.tabs(["📝 Novo Lançamento", "📊 Relatórios e Filtros (Admin)"])
 else:
-    aba_lancamento, aba_relatorios = st.tabs(["📝 Novo Lançamento", "🔒 Área Restrita"]), None
+    # Cria as abas, mas renomeia a segunda para alertar o líder
+    aba_lancamento, aba_relatorios = st.tabs(["📝 Novo Lançamento", "🔒 Área Restrita"])
 
 # ABA DE LANÇAMENTO (Todos veem)
 with aba_lancamento:
@@ -148,53 +148,52 @@ with aba_lancamento:
             
             st.success(f"Diário salvo! Foram geradas {round(hgt, 2)} horas (HGT) para {len(colaboradores_selecionados)} pessoas.")
 
-# ABA DE RELATÓRIOS (Somente o Admin, que é o Lucas, consegue ver isso e fazer os filtros)
-if aba_relatorios:
-    with aba_relatorios:
-        if st.session_state["papel_usuario"] != "admin":
-            st.warning("Você não tem acesso a esta área.")
+# ABA DE RELATÓRIOS (Bloqueada para líderes)
+with aba_relatorios:
+    if st.session_state["papel_usuario"] != "admin":
+        st.warning("⚠️ Você não tem permissão para acessar os relatórios financeiros e de horas. O acesso é restrito ao Administrador Geral.")
+    else:
+        st.markdown("### 🔍 Filtros Avançados de Horas Trabalhadas")
+        df = st.session_state['banco_diario'].copy()
+
+        if df.empty:
+            st.info("Nenhum diário registrado ainda.")
         else:
-            st.markdown("### 🔍 Filtros Avançados de Horas Trabalhadas")
-            df = st.session_state['banco_diario'].copy()
+            # Converte a coluna Data para formato de data real para poder filtrar
+            df['Data_Real'] = pd.to_datetime(df['Data'], format='%d/%m/%Y')
+            
+            f_col1, f_col2, f_col3 = st.columns(3)
+            with f_col1:
+                filtro_obra = st.selectbox("Filtrar por Obra:", ["Todas as Obras"] + LISTA_OBRAS)
+            with f_col2:
+                filtro_nome = st.selectbox("Pesquisar Colaborador:", ["Todos"] + LISTA_COLABORADORES)
+            with f_col3:
+                data_min = df['Data_Real'].min().date()
+                data_max = df['Data_Real'].max().date()
+                filtro_datas = st.date_input("Período:", [data_min, data_max])
 
-            if df.empty:
-                st.info("Nenhum diário registrado ainda.")
-            else:
-                # Converte a coluna Data para formato de data real para poder filtrar
-                df['Data_Real'] = pd.to_datetime(df['Data'], format='%d/%m/%Y')
-                
-                f_col1, f_col2, f_col3 = st.columns(3)
-                with f_col1:
-                    filtro_obra = st.selectbox("Filtrar por Obra:", ["Todas as Obras"] + LISTA_OBRAS)
-                with f_col2:
-                    filtro_nome = st.selectbox("Pesquisar Colaborador:", ["Todos"] + LISTA_COLABORADORES)
-                with f_col3:
-                    data_min = df['Data_Real'].min().date()
-                    data_max = df['Data_Real'].max().date()
-                    filtro_datas = st.date_input("Período:", [data_min, data_max])
+            # Aplica os filtros
+            df_filtrado = df.copy()
+            if filtro_obra != "Todas as Obras":
+                df_filtrado = df_filtrado[df_filtrado['Obra'] == filtro_obra]
+            
+            if filtro_nome != "Todos":
+                # Procura se o nome está dentro da lista de nomes salvos na linha
+                df_filtrado = df_filtrado[df_filtrado['Colaboradores'].str.contains(filtro_nome, na=False)]
+            
+            if len(filtro_datas) == 2:
+                df_filtrado = df_filtrado[(df_filtrado['Data_Real'].dt.date >= filtro_datas[0]) & (df_filtrado['Data_Real'].dt.date <= filtro_datas[1])]
 
-                # Aplica os filtros
-                df_filtrado = df.copy()
-                if filtro_obra != "Todas as Obras":
-                    df_filtrado = df_filtrado[df_filtrado['Obra'] == filtro_obra]
-                
-                if filtro_nome != "Todos":
-                    # Procura se o nome está dentro da lista de nomes salvos na linha
-                    df_filtrado = df_filtrado[df_filtrado['Colaboradores'].str.contains(filtro_nome, na=False)]
-                
-                if len(filtro_datas) == 2:
-                    df_filtrado = df_filtrado[(df_filtrado['Data_Real'].dt.date >= filtro_datas[0]) & (df_filtrado['Data_Real'].dt.date <= filtro_datas[1])]
+            # Remove a coluna temporária de data real
+            df_filtrado = df_filtrado.drop(columns=['Data_Real'])
 
-                # Remove a coluna temporária de data real
-                df_filtrado = df_filtrado.drop(columns=['Data_Real'])
+            # Mostra Resultados
+            st.divider()
+            st.markdown(f"**Resultados Encontrados:** {len(df_filtrado)} registros")
+            st.dataframe(df_filtrado, use_container_width=True)
 
-                # Mostra Resultados
-                st.divider()
-                st.markdown(f"**Resultados Encontrados:** {len(df_filtrado)} registros")
-                st.dataframe(df_filtrado, use_container_width=True)
+            total_hgt = df_filtrado['HGT (Sem Almoço)'].sum()
+            st.metric("⏱️ Total de Horas HGT no período filtrado", f"{total_hgt} horas")
 
-                total_hgt = df_filtrado['HGT (Sem Almoço)'].sum()
-                st.metric("⏱️ Total de Horas HGT no período filtrado", f"{total_hgt} horas")
-
-                csv_diario = df_filtrado.to_csv(sep=';', index=False, encoding='utf-8')
-                st.download_button("📥 Baixar Relatório (Excel)", data=csv_diario, file_name="relatorio_diario_obras.csv", mime="text/csv")
+            csv_diario = df_filtrado.to_csv(sep=';', index=False, encoding='utf-8')
+            st.download_button("📥 Baixar Relatório (Excel)", data=csv_diario, file_name="relatorio_diario_obras.csv", mime="text/csv")
