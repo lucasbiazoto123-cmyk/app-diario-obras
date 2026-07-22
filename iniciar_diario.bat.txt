@@ -1,0 +1,3 @@
+@echo off
+echo Iniciando o Sistema de Diario de Obras...
+streamlit run app_diario.py
