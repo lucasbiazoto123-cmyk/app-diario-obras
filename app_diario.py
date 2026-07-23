@@ -59,6 +59,9 @@ def conectar_google():
         
         # Abre a planilha pelo link direto para evitar o erro 200
         planilha = client.open_by_url("https://docs.google.com/spreadsheets/d/1IprM-oJyFe7JQ2CP_OeJuv4LJc3ADRLs/edit?gid=1455764483#gid=1455764483").sheet1
+        # Depois ele entra na aba exata que você criou (Escreva o nome da aba IGUALZINHO está no Excel)
+        planilha = documento.worksheet("Base_Diario_Obras_ITON")
+        
         return planilha
     except Exception as e:
         st.error(f"Erro ao conectar com o Google: {e}")
