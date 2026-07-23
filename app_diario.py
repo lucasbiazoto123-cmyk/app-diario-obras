@@ -61,7 +61,7 @@ def conectar_google():
         
         # ⚠️ LINK MANTIDO EXATAMENTE IGUAL AO QUE FUNCIONOU PRA VOCÊ
         LINK_DA_PLANILHA = "https://docs.google.com/spreadsheets/d/1oI9pPGXngdE1jrOaQGIRhHMfLnt_Evh9tN_9lQkLaOU/edit?gid=1342849862#gid=1342849862"
-        NOME_DA_ABA = "DIÁRIO DE OBRA "
+        NOME_DA_ABA = "Base_Diario_Obras_ITON"
         
         documento = client.open_by_url(LINK_DA_PLANILHA)
         planilha = documento.worksheet(NOME_DA_ABA)
@@ -163,4 +163,22 @@ with st.container():
                 for colaborador in colaboradores_selecionados:
                     nova_linha = [
                         carimbo_agora,                    # Col 1: Carimbo
-                        data_formatada,
+                        data_formatada,                   # Col 2: Data
+                        st.session_state["nome_usuario"], # Col 3: Supervisor
+                        obra_selecionada,                 # Col 4: Obra
+                        colaborador,                      # Col 5: Colaborador
+                        hora_inicio_str,                  # Col 6: Início
+                        hora_fim_str,                     # Col 7: Término
+                        observacao,                       # Col 8: Observação
+                        horas_totais_str,                 # Col 9: Total de Horas
+                        hgt_str                           # Col 10: HGT
+                    ]
+                    linhas_para_adicionar.append(nova_linha)
+
+                try:
+                    planilha_google.append_rows(linhas_para_adicionar)
+                    st.success(f"✅ Diário salvo com sucesso! {len(colaboradores_selecionados)} registros lançados separadamente na base.")
+                    st.balloons()
+                except Exception as e:
+                    st.error(f"Erro ao salvar na planilha: {e}")
+                    st.code(traceback.format_exc(), language="python")
