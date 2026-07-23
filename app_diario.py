@@ -58,7 +58,7 @@ def conectar_google():
         client = gspread.authorize(creds)
         
         # O LINK CORRIGIDO ESTÁ AQUI (COM ASPAS)
-        LINK_DA_PLANILHA = "https://docs.google.com/spreadsheets/d/1IprM-oJyFe7JQ2CP_OeJuv4LJc3ADRLs/edit?usp=drive_link&ouid=107613525063004158889&rtpof=true&sd=true"
+        LINK_DA_PLANILHA = "https://docs.google.com/spreadsheets/d/1oI9pPGXngdE1jrOaQGIRhHMfLnt_Evh9tN_9lQkLaOU/edit?gid=1342849862#gid=1342849862"
         
         # ⚠️ ATENÇÃO: CONFIRME SE O NOME DA ABA É ESSE MESMO LÁ NO EXCEL
         NOME_DA_ABA = "Base_Diario_Obras_ITON"
