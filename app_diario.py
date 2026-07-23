@@ -46,7 +46,6 @@ if not check_password():
 # ==========================================
 # 2. CONEXÃO COM O GOOGLE SHEETS
 # ==========================================
-@st.cache_resource(ttl=600) # Mantém a conexão aberta por 10 min para ficar rápido
 def conectar_google():
     try:
         # Pega a chave que escondemos lá no painel do Streamlit
@@ -58,7 +57,7 @@ def conectar_google():
         creds = Credentials.from_service_account_info(credenciais_dict, scopes=scopes)
         client = gspread.authorize(creds)
         
-        # Abre a planilha exata que criamos no Drive
+        # Abre a planilha pelo link direto para evitar o erro 200
         planilha = client.open_by_url("https://docs.google.com/spreadsheets/d/1IprM-oJyFe7JQ2CP_OeJuv4LJc3ADRLs/edit?gid=1455764483#gid=1455764483").sheet1
         return planilha
     except Exception as e:
