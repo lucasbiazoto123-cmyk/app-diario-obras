@@ -59,7 +59,7 @@ def conectar_google():
         client = gspread.authorize(creds)
         
         # Abre a planilha exata que criamos no Drive
-        planilha = client.open("https://docs.google.com/spreadsheets/d/1IprM-oJyFe7JQ2CP_OeJuv4LJc3ADRLs/edit?gid=1455764483#gid=1455764483").sheet1
+        planilha = client.open_by_url("https://docs.google.com/spreadsheets/d/1IprM-oJyFe7JQ2CP_OeJuv4LJc3ADRLs/edit?gid=1455764483#gid=1455764483").sheet1
         return planilha
     except Exception as e:
         st.error(f"Erro ao conectar com o Google: {e}")
