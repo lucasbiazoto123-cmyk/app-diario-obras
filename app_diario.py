@@ -57,15 +57,15 @@ def conectar_google():
         creds = Credentials.from_service_account_info(credenciais_dict, scopes=scopes)
         client = gspread.authorize(creds)
         
-        # ⚠️ ATENÇÃO: COLOQUE SEU LINK AQUI DENTRO DAS ASPAS
+        # O LINK CORRIGIDO ESTÁ AQUI (COM ASPAS)
         LINK_DA_PLANILHA = "https://docs.google.com/spreadsheets/d/1IprM-oJyFe7JQ2CP_OeJuv4LJc3ADRLs/edit?usp=drive_link&ouid=107613525063004158889&rtpof=true&sd=true"
         
-        # ⚠️ ATENÇÃO: COLOQUE O NOME DA ABA AQUI DENTRO DAS ASPAS
+        # ⚠️ ATENÇÃO: CONFIRME SE O NOME DA ABA É ESSE MESMO LÁ NO EXCEL
         NOME_DA_ABA = "Base_Diario_Obras_ITON"
         
         # Abre DIRETO pelo link (Foge do erro 200 de pesquisa)
-        documento = client.open_by_url(https://docs.google.com/spreadsheets/d/1IprM-oJyFe7JQ2CP_OeJuv4LJc3ADRLs/edit?usp=drive_link&ouid=107613525063004158889&rtpof=true&sd=true)
-        planilha = documento.worksheet(Base_Diario_Obras_ITON)
+        documento = client.open_by_url(LINK_DA_PLANILHA)
+        planilha = documento.worksheet(NOME_DA_ABA)
         
         return planilha
         
